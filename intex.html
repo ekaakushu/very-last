@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brilliant Kids: Mind Academy</title>
+    <style>
+        :root {
+            --bg-dark: #060913;
+            --card-bg: #0f1322;
+            --primary-neon: #00f2fe;
+            --secondary-neon: #4facfe;
+            --accent-purple: #7f00ff;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --ea-red: #ff3344;
+            --success-green: #00ff87;
+            --gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 15px; 
+            overflow-x: hidden;
+            overflow-y: auto; 
+            width: 100vw;
+        }
+        .app-container {
+            max-width: 1300px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: 0 25px 70px rgba(0, 242, 254, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: visible;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- 📱 MOBILE ORIENTATION ENFORCER OVERLAY --- */
+        #mobile-rotate-notice {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #060913;
+            z-index: 999999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .rotate-icon {
+            font-size: 4rem;
+            animation: pulseRotate 2s infinite ease-in-out;
+            margin-bottom: 20px;
+        }
+        @keyframes pulseRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(90deg) scale(1.2); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            #mobile-rotate-notice {
+                display: flex !important;
+            }
+            body { padding: 0; overflow: auto; }
+            .app-container {
+                position: relative;
+                width: 100vh;
+                min-height: 100vw;
+                transform: rotate(90deg);
+                transform-origin: top left;
+                margin-left: 100vw;
+                border-radius: 0px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            .class-grid-deck {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                margin: 20px auto !important;
+                padding-bottom: 60px;
+            }
+            .class-select-card { padding: 14px !important; min-height: 90px; }
+            .class-select-card h4 { font-size: 1rem !important; }
+            .class-select-card p { display: block !important; font-size: 0.75rem !important; }
+            .setup-title { font-size: 1.8rem !important; }
+        }
+
+        .setup-screen-overlay {
+            padding: 40px 30px;
+            text-align: center;
+            background: linear-gradient(145deg, #0f1322, #07090f);
+        }
+        .setup-title { font-size: 2.2rem; margin-bottom: 15px; font-weight: 800; background: linear-gradient(to right, #fff, var(--primary-neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .class-grid-deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1100px; margin: 30px auto; }
+        .class-select-card { background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 20px; cursor: pointer; transition: all 0.25s ease; position: relative; text-align: left; }
+        .class-select-card:hover { border-color: var(--primary-neon); transform: translateY(-4px); background: rgba(0, 242, 254, 0.03); }
+        .class-select-card.selected-node { border-color: var(--success-green); background: rgba(0, 255, 135, 0.06); }
+        .class-select-card h4 { font-size: 1.1rem; color: #fff; margin-bottom: 6px; font-weight: 700; }
+        .class-select-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
+        
+        .device-badge-tag { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .desk-tag { background: rgba(127, 0, 255, 0.2); color: #c48eff; border: 1px solid rgba(127, 0, 255, 0.3); }
+        .mobi-tag { background: rgba(0, 242, 254, 0.2); color: #8ef7ff; border: 1px solid rgba(0, 242, 254, 0.3); }
+
+        .hero-header {
+            background: linear-gradient(135deg, rgba(127,0,255,0.2) 0%, rgba(0,242,254,0.02) 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .profile-section { display: flex; align-items: center; gap: 12px; }
+        .avatar-frame { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary-neon); display: flex; justify-content: center; align-items: center; font-size: 32px; background: rgba(0,0,0,0.3); }
+
+        .creator-badge {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(127, 0, 255, 0.15));
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--primary-neon);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .live-score-deck { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+        .tracker-box { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 242, 254, 0.2); padding: 8px 14px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; }
+
+        .dashboard-layout { display: grid; grid-template-columns: 340px 1fr; min-height: 700px; }
+        
+        .sidebar { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); padding: 15px; display: flex; flex-direction: column; gap: 15px; max-height: 800px; overflow-y: auto; }
+        .sidebar-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 12px; }
+        .sidebar-section h3 { font-size: 0.9rem; color: var(--primary-neon); margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        
+        .shop-scroll-deck { max-height: 200px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 6px; }
+        .shop-item-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; background: rgba(0,0,0,0.15); padding: 6px; border-radius: 6px; }
+        .small-buy-btn { background: var(--gold); border: none; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; color: #000; transition: 0.2s; }
+        .small-buy-btn:hover { transform: scale(1.04); }
+        .pack-buy-btn { background: linear-gradient(135deg, #00ff87, #00b359); color: #000; font-weight: 900; }
+
+        .inventory-badge { background: #1e293b; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .vault-input { width: 100%; background: #080b11; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 6px; color: #fff; font-size: 0.8rem; margin-bottom: 8px; text-align: center; font-weight: bold; }
+        .vault-btn { width: 100%; background: linear-gradient(90deg, var(--accent-purple), #5a00b3); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+
+        .main-content { padding: 25px; position: relative; }
+        .tab-bar { display: flex; background: rgba(0,0,0,0.3); margin-bottom: 20px; border-radius: 12px; overflow: hidden; }
+        .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { color: var(--primary-neon); background: rgba(255,255,255,0.05); }
+
+        .viewport { display: none; }
+        .viewport.active { display: block; }
+
+        .mode-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .mode-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .mode-card.active { border-color: var(--success-green); background: rgba(0,255,135,0.05); }
+
+        .memory-cards-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 440px; margin: 0 auto; }
+        .mem-card { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; height: 75px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; cursor: pointer; transition: 0.3s; }
+        .mem-card.flipped { background: var(--accent-purple); border-color: var(--primary-neon); }
+
+        .game-matrix-wrapper { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .puzzle-display-card { background: rgba(0,0,0,0.3); width: 100%; max-width: 550px; padding: 35px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: center; position: relative; }
+        #puzzle-question { font-size: 1.8rem; font-weight: 800; color: #fff; min-height: 60px; display: flex; justify-content: center; align-items: center; }
+        
+        .input-grid-deck { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 550px; }
+        .ans-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .ans-btn:hover { border-color: var(--primary-neon); background: rgba(0, 242, 254, 0.05); }
+
+        .system-hold-panel { width: 100%; max-width: 550px; display: flex; gap: 10px; margin-top: 5px; }
+        .hold-btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.95rem; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-pause { background: linear-gradient(135deg, #e11d48, #9f1239); color: white; }
+        .btn-resume { background: linear-gradient(135deg, #059669, #065f46); color: white; }
+
+        .level-tracker-banner { width: 100%; max-width: 550px; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gold); font-weight: bold; background: rgba(255,215,0,0.05); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,215,0,0.1); }
+
+        .mansion-scroll-container { max-height: 480px; overflow-y: auto; padding-right: 5px; }
+        .mansion-rooms-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .room-box { background: rgba(0,0,0,0.25); border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px; min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; padding: 15px; text-align: center; }
+        .unlocked-room { border: 2px solid var(--primary-neon) !important; background: linear-gradient(145deg, #111625, #221035) !important; }
+
+        .room-immersion-overlay { display: none; background: linear-gradient(135deg, #07090f, #150a24); border-radius: 20px; padding: 25px; border: 2px solid var(--primary-neon); }
+        .room-header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px; }
+        .exit-room-btn { background: var(--ea-red); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .wheel-canvas-container { display: flex; flex-direction: column; align-items: center; gap: 20px; background: rgba(0,0,0,0.3); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .wheel-wrapper-relative { position: relative; width: 280px; height: 280px; }
+        #wheel-canvas { border-radius: 50%; box-shadow: 0 0 30px rgba(127, 0, 255, 0.4); }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid var(--ea-red); z-index: 10; }
+
+        .payment-gateway-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 5000; }
+        .gateway-card { background: #0f172a; border: 2px solid var(--success-green); padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 100%; }
+        
+        #fx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        .timer-bar-outer { width: 100%; height: 6px; background: #222; margin-bottom: 5px; border-radius: 3px; overflow: hidden; }
+        .timer-bar-inner { width: 100%; height: 100%; background: var(--ea-red); transition: width 0.1s linear; }
+
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); display: flex;
+            justify-content: center; align-items: center; z-index: 99999;
+            font-family: Arial, sans-serif;
+        }
+        .auth-card { background: #1e1e2f; color: #fff; padding: 30px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); }
+        .auth-card h2 { margin-top: 0; color: #4CAF50; }
+        .input-group input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #2b2b3d; color: #fff; border: 1px solid #444; box-sizing: border-box; }
+        .button-group { display: flex; gap: 10px; }
+        .button-group button { flex: 1; padding: 10px; border: none; border-radius: 6px; background-color: #4CAF50; color: white; font-weight: bold; cursor: pointer; }
+        .button-group button.btn-secondary { background-color: #555; }
+        .status-msg { font-size: 12px; min-height: 16px; margin: 8px 0; color: #ff5555; word-break: break-word; }
+
+        @media (max-width: 768px) and (orientation: landscape) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+            .sidebar { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); max-height: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-rotate-notice" onclick="requestFullScreenMode()">
+        <div class="rotate-icon">📱🔄</div>
+        <h2 style="color: var(--primary-neon); margin-bottom: 10px;">Please Rotate Your Device</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 300px;">
+            This game requires Landscape Mode for the best experience. Turn your device horizontally or tap anywhere to force landscape!
+        </p>
+    </div>
+
+    <canvas id="fx-canvas"></canvas>
+
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>Game Login</h2>
+            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Enter details to load your level & coins!</p>
+            
+            <div class="input-group">
+                <input type="text" id="auth-username" placeholder="Username" autocomplete="off" />
+                <input type="password" id="auth-password" placeholder="Password" />
+            </div>
+
+            <p id="auth-status" class="status-msg"></p>
+
+            <div class="button-group">
+                <button type="button" id="login-btn">Log In</button>
+                <button type="button" id="signup-btn" class="btn-secondary">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="payment-gateway-modal" id="bank-gateway-node">
+        <div class="gateway-card">
+            <h2 style="color: var(--success-green); margin-bottom: 10px;">💳 Processing Secure Node...</h2>
+            <div id="loading-spinner" style="font-size: 2.5rem; margin: 15px 0;">🔄</div>
+            <h3 id="gateway-pack-title" style="color: #fff; font-size: 1.1rem; margin-bottom: 15px;">Package Loop Status</h3>
+            <button class="small-buy-btn" style="background: var(--ea-red); color: white;" onclick="cancelMockPayment()">Cancel Transaction</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <div id="class-selection-hub-screen" class="setup-screen-overlay">
+            <h2 class="setup-title">⚔️ Initialize Mind Academy Vector</h2>
+            <p style="color: var(--text-muted); margin-bottom: 10px;">Configure your school curriculum parameters to unlock the puzzle engine.</p>
+            
+            <div class="class-grid-deck">
+                <div class="class-select-card selected-node" id="node-class5" onclick="assignActiveDifficulty('Class 5', 20)">
+                    <div class="device-badge-tag mobi-tag">Class 5 Array</div>
+                    <h4>Introductory Basic Core</h4>
+                    <p>Standard numbers, basic calculations, and extended 20-second entry windows.</p>
+                </div>
+                
+                <div class="class-select-card" id="node-class6" onclick="assignActiveDifficulty('Class 6', 18)">
+                    <div class="device-badge-tag mobi-tag">Class 6 Array</div>
+                    <h4>Foundational Core</h4>
+                    <p>Mild mathematical scaling logic and smooth tactical layout maps.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class7" onclick="assignActiveDifficulty('Class 7', 15)">
+                    <div class="device-badge-tag mobi-tag">Class 7 Array</div>
+                    <h4>Intermediate Matrix</h4>
+                    <p>Standard logic speeds, variable calculations, and balanced windows.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class8" onclick="assignActiveDifficulty('Class 8', 12)">
+                    <div class="device-badge-tag desk-tag">Class 8 Array</div>
+                    <h4>Advanced Arithmetic</h4>
+                    <p>Rapid numeric scrambles, complex logic blocks, and deep scaling multipliers.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class9" onclick="assignActiveDifficulty('Class 9', 10)">
+                    <div class="device-badge-tag desk-tag">Class 9 Array</div>
+                    <h4>Algebraic Vector Matrix</h4>
+                    <p>Tight computing windows, scrambled data structures, and sharp difficulty curves.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class10" onclick="assignActiveDifficulty('Class 10', 9)">
+                    <div class="device-badge-tag desk-tag">Class 10 Array</div>
+                    <h4>High School Grandmaster</h4>
+                    <p>Intense evaluation formulas, low reflex timing windows, and extreme rewards.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class11" onclick="assignActiveDifficulty('Class 11', 7)">
+                    <div class="device-badge-tag desk-tag">Class 11 Array</div>
+                    <h4>Quantum Logic Cluster</h4>
+                    <p>Ultra-fast calculation cycles, complex algebraic formulas, and competitive metrics.</p>
+                </div>
+
+                <div class="class-select-card" id="node-class12" onclick="assignActiveDifficulty('Class 12', 5)">
+                    <div class="device-badge-tag desk-tag">Class 12 Array</div>
+                    <h4>Titan Architect Mode</h4>
+                    <p>The ultimate challenge tier. 5-second computation thresholds with maximum rewards.</p>
+                </div>
+            </div>
+            
+            <button class="vault-btn" style="max-width: 320px; padding: 14px 20px; font-size: 1rem; margin-top: 15px;" onclick="triggerEngineInitialization()">START INTEGRATION GAME</button>
+        </div>
+
+        <div id="main-game-matrix-workspace" style="display: none;">
+            <header class="hero-header">
+                <div class="profile-section">
+                    <div class="avatar-frame">🧠</div>
+                    <div>
+                        <h2 id="ui-current-class-header" style="font-size: 1.2rem; background: linear-gradient(to right, #fff, var(--primary-neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Grandmaster Architect</h2>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span id="ui-hardware-feature-sub" style="font-size: 0.75rem; color: var(--success-green); font-weight: bold;">Unpredictable Code Vault Active</span>
+                            <div><span class="creator-badge">🛠️ Creator: Ekaksh Agarwal</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="live-score-deck">
+                    <div class="tracker-box" style="color: #fff;">PLAYER: <span id="display-user" style="color: var(--primary-neon);">Guest</span></div>
+                    <div class="tracker-box" style="color: var(--primary-neon);">🏁 LEVEL: <span id="ui-lvl">1</span> / 30,000</div>
+                    <div class="tracker-box" style="color: var(--gold);">🪙 COINS: <span id="ui-coins">500</span></div>
+                </div>
+            </header>
+
+            <div class="dashboard-layout">
+                
+                <aside class="sidebar">
+                    
+                    <div class="sidebar-section" style="border-color: var(--success-green);">
+                        <h3 style="color: var(--success-green);">🛒 Coin Emporium (60 Mega Packs)</h3>
+                        <div class="shop-scroll-deck" id="dynamic-60-pack-shop"></div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>🔑 Secret Code Vault (High-Value Code List)</h3>
+                        <input type="text" id="vault-code-input" class="vault-input" placeholder="Enter Redeem Code">
+                        <button class="vault-btn" onclick="redeemSecretCode()">REDEEM CODE</button>
+                        <div id="vault-message" style="font-size:0.75rem; margin-top:5px; text-align:center; font-weight:bold;"></div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>🎒 Inventory Gear</h3>
+                        <div class="inventory-badge"><span>⏱️ Time Freeze:</span><strong id="inv-freeze">2</strong></div>
+                        <div class="inventory-badge"><span>🛡️ 50/50 Shield:</span><strong id="inv-shield">1</strong></div>
+                        <div style="display:flex; gap:5px; margin-top:8px;">
+                            <button class="small-buy-btn" style="flex:1;" onclick="buyInventoryItem('freeze', 300)">Buy Freeze (300🪙)</button>
+                            <button class="small-buy-btn" style="flex:1;" onclick="buyInventoryItem('shield', 350)">Buy Shield (350🪙)</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="main-content">
+                    
+                    <nav class="tab-bar" id="main-nav-bar">
+                        <button class="tab-btn active" onclick="switchTab('game-tab')">🎮 Combat Puzzle Labs</button>
+                        <button class="tab-btn" onclick="switchTab('treehouse-tab')">🏰 Infinite Treehouse Maps</button>
+                        <button class="tab-btn" onclick="switchTab('rewards-tab')">🎰 Mega Fortune Wheel</button>
+                    </nav>
+
+                    <div id="game-tab" class="viewport active">
+                        <div class="mode-selector-grid" id="mode-selector-grid-node">
+                            <div class="mode-card active" id="mode-math" onclick="changeGameMode('math')">🔢<br><strong>Extreme Math</strong></div>
+                            <div class="mode-card" id="mode-memory" onclick="changeGameMode('memory')">🧠<br><strong>Memory Cards</strong></div>
+                            <div class="mode-card" id="mode-word" onclick="changeGameMode('word')">🔠<br><strong>Word Scramble</strong></div>
+                        </div>
+
+                        <div class="game-matrix-wrapper">
+                            <div class="level-tracker-banner">
+                                <span>📋 CHALLENGE PROGRESSION:</span>
+                                <span id="ui-question-tracker">Question 1 of 30</span>
+                            </div>
+
+                            <div class="timer-bar-outer" id="main-timer-wrapper"><div class="timer-bar-inner" id="ui-timer"></div></div>
+                            
+                            <div class="puzzle-display-card" id="main-puzzle-box">
+                                <div id="puzzle-question">Initializing Core Matrix Arrays...</div>
+                                <div id="ui-feedback" style="font-weight:bold; margin-top:10px; height:20px;"></div>
+                                <div class="memory-cards-board" id="memory-board-node" style="display: none;"></div>
+                            </div>
+
+                            <div class="system-hold-panel">
+                                <button class="hold-btn btn-pause" id="btn-pause-node" onclick="pauseGameAndRemoveQuestion()">⏸️ Pause Game & Update Data</button>
+                                <button class="hold-btn btn-resume" id="btn-resume-node" style="display:none;" onclick="resumeGameAndLoadQuestion()">▶️ Resume Game & Load Question</button>
+                            </div>
+
+                            <div class="use-power-row" id="power-row-node" style="display: flex; gap: 10px;">
+                                <button class="use-power-btn" style="background:#1e293b; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);" onclick="usePowerup('freeze')">⏱️ Freeze Time</button>
+                                <button class="use-power-btn" style="background:#1e293b; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);" onclick="usePowerup('shield')">🛡️ 50/50 Shield</button>
+                            </div>
+
+                            <div class="input-grid-deck" id="matrix-input-deck">
+                                <button class="ans-btn" onclick="processSelection(this)">-</button>
+                                <button class="ans-btn" onclick="processSelection(this)">-</button>
+                                <button class="ans-btn" onclick="processSelection(this)">-</button>
+                                <button class="ans-btn" onclick="processSelection(this)">-</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="treehouse-tab" class="viewport">
+                        <div id="treehouse-main-view" class="mansion-scroll-container">
+                            <div class="mansion-rooms-grid" id="dynamic-rooms-canvas"></div>
+                        </div>
+
+                        <div id="room-immersion-view" class="room-immersion-overlay">
+                            <div class="room-header-panel">
+                                <div>
+                                    <h2 id="active-room-title" style="color: var(--primary-neon);">Active Room Node</h2>
+                                    <p style="font-size:0.8rem; color: var(--gold);">Infinite Loop Engine Active</p>
+                                </div>
+                                <button class="exit-room-btn" onclick="exitActiveRoom()">🚪 Exit room</button>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.02); padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1);">
+                                <div>
+                                    <h4 id="ui-room-item-title" style="color:var(--success-green);">Node Multiplier Loader</h4>
+                                    <p style="font-size:0.75rem; color:var(--text-muted);">Upgrades scale room coin payouts infinitely!</p>
+                                </div>
+                                <button class="small-buy-btn" style="padding:8px 16px;" id="ui-room-upgrade-btn" onclick="upgradeCurrentRoomItem()">Upgrade Node</button>
+                            </div>
+
+                            <div class="game-matrix-wrapper">
+                                <div class="puzzle-display-card" style="border-color: var(--gold);">
+                                    <div id="room-puzzle-question" style="font-size: 1.8rem; font-weight:800;">Processing Grid...</div>
+                                    <div id="room-ui-feedback" style="margin-top:5px; height:18px; font-weight:bold;"></div>
+                                </div>
+                                <div class="input-grid-deck" id="room-input-deck">
+                                    <button class="ans-btn" onclick="processRoomSelection(this)">-</button>
+                                    <button class="ans-btn" onclick="processRoomSelection(this)">-</button>
+                                    <button class="ans-btn" onclick="processRoomSelection(this)">-</button>
+                                    <button class="ans-btn" onclick="processRoomSelection(this)">-</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rewards-tab" class="viewport">
+                        <div class="wheel-canvas-container">
+                            <h3>🎰 Titan High-Value Fortune Wheel</h3>
+                            <div id="spin-status-banner" style="background: rgba(0,255,135,0.1); color: var(--success-green); padding: 5px 12px; border-radius:10px; font-size:0.85rem; font-weight:bold;">🟢 Spin Available! Real Rewards Setup!</div>
+                            
+                            <div class="wheel-wrapper-relative">
+                                <div class="wheel-pointer"></div>
+                                <canvas id="wheel-canvas" width="280" height="280"></canvas>
+                            </div>
+
+                            <button class="small-buy-btn" id="wheel-spin-trigger" style="padding:12px 40px; font-size:1.1rem; background: var(--success-green);" onclick="spinVisualFortuneWheel()">SPIN FOR MEGA COINS</button>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        /* --- GLOBAL GAME ENGINE DATA STATE --- */
+        let engine = {
+            coins: "500", // BigInt representation as String
+            level: 1, 
+            maxLevels: 30000, 
+            currentMode: 'math',
+            clock: 20, 
+            maxClockSetting: 20, 
+            clockTicker: null, 
+            targetAnswer: "",
+            inventory: { freeze: 2, shield: 1 },
+            isGamePaused: false,
+            selectedClassTitle: 'Class 5',
+            isMobileHardware: false,
+            questionsSolvedInCurrentLevel: 0,
+            requiredQuestionsPerLevel: 30,
+            lastWheelSpinTimestamp: 0,
+
+            masterEmojiPool: [
+                '🚀','💎','🔥','👑','🔮','🎰','👾','🪐','⚔️','🧩',
+                '⚡','🌟','🍀','🦄','🤖','🦁','🎈','🎸','🛸','🏎️',
+                '🏆','⚓','🍔','🍕','🍦','🎨','🌍','🎭','🔑','🧿'
+            ],
+            memoryIconsPool: [],
+            flippedCardsIndices: [], matchedCardsCount: 0, isLockingBoardAction: false,
+
+            masterWordBank: [
+                "QUANTUM", "CYBER", "POLYGON", "ALGORITHM", "MATRIX", "TITAN", "NEXUS", "STARDUST", "COSMOS", "VORTEX", "NEURAL", "DYNAMIC", "ENGINE", "GALAXY", "PHANTOM", "SHADOW", "ORBIT", "ECLIPSE", "HORIZON", "INFINITY", "MAGNET", "GRAVITY", "FUSION", "PLASMA", "SOLAR", "METEOR", "COMET", "NEBULA", "AURORA", "PULSAR", "QUARK", "VECTOR", "BINARY", "PIXEL", "CRYPTO", "BLOCKCHAIN", "KINETIC", "GENESIS", "VERTEX", "HELIX", "ZENITH", "APEX", "OMEGA", "ALPHA", "TITANIUM", "CHROME", "COBALT", "NITRO", "SILICON", "GRAPHITE", "SAPPHIRE", "EMERALD", "OBSIDIAN", "ELEMENT"
+            ],
+
+            rooms: [
+                { id: 0, title: "Alpha Arcade Nexus", cost: "500", unlocked: false, upgradeLevel: 1, roomLevel: 1 },
+                { id: 1, title: "Hydro Generator Station", cost: "1200", unlocked: false, upgradeLevel: 1, roomLevel: 1 }
+            ],
+            currentRoomIndex: -1, 
+            lastVisitedRoomIndex: 0,
+            roomTargetAnswer: 0,
+
+            wheelRewards: ["1000000000000000", "578589589000", "2589700000", "19756440000", "50998985500", "25758758758000", "29465674747474400000", "598787979890000000000"],
+            wheelColors: ['#ff3344', '#7f00ff', '#00f2fe', '#ffd700', '#00ff87', '#ff5e00', '#db00c2', '#4facfe'],
+            isWheelSpinning: false
+        };
+
+        const VAULT_CODES = {
+            "COIN-10000-A1X": "10000", "COIN-10899-B2Y": "10899", "COIN-11798-C3Z": "11798", "COIN-12697-D4W": "12697", "COIN-13596-E5V": "13596",
+            "COIN-90000-L0M": "90000"
+        };
+        let claimedCodes = {};
+
+        /* --- AUTOMATIC SCREEN ROTATION & FULLSCREEN LOGIC --- */
+        function requestFullScreenMode() {
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                element.requestFullscreen().catch(err => console.log(err));
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            }
+            tryLockOrientation();
+        }
+
+        function tryLockOrientation() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => {
+                    console.log("Orientation lock notice: Mobile requires user gesture or full screen.");
+                });
+            }
+        }
+
+        /* --- SAFE BIGINT MATH HELPERS --- */
+        function deductCoins(costAmount) {
+            let current = BigInt(engine.coins);
+            let cost = BigInt(costAmount);
+            if (current >= cost) {
+                engine.coins = (current - cost).toString();
+                return true;
+            }
+            return false;
+        }
+
+        function addCoins(rewardAmount) {
+            let current = BigInt(engine.coins);
+            let reward = BigInt(rewardAmount);
+            engine.coins = (current + reward).toString();
+        }
+
+        /* --- FIREBASE SETUP --- */
+        const firebaseConfig = {
+            apiKey: "AIzaSyDciTVNpBO9WY3TL4XQj5orJDrS3m92hkc",
+            authDomain: "my-game-ekaksh.firebaseapp.com",
+            projectId: "my-game-ekaksh",
+            storageBucket: "my-game-ekaksh.firebasestorage.app",
+            messagingSenderId: "962399819514",
+            appId: "1:962399819514:web:c7d9c43cd476c45e341b43"
+        };
+
+        let db = null;
+        let currentUser = null;
+
+        try {
+            if (typeof firebase !== 'undefined') {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                console.log("Firebase initialized successfully!");
+            }
+        } catch (error) {
+            console.error("Firebase Init Error:", error);
+        }
+
+        function setStatus(msg, isError = true) {
+            const el = document.getElementById('auth-status');
+            if (el) {
+                el.style.color = isError ? "#ff5555" : "#00ff87";
+                el.textContent = msg;
+            }
+        }
+
+        /* --- AUTHENTICATION HANDLERS --- */
+        async function handleSignup() {
+            if (!db) { setStatus("Database not initialized!"); return; }
+
+            const username = document.getElementById('auth-username').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value.trim();
+
+            if (!username || !password) { setStatus("Please fill in all fields!"); return; }
+
+            setStatus("Creating account...", false);
+
+            try {
+                const userRef = db.collection('players').doc(username);
+                const doc = await userRef.get();
+
+                if (doc.exists) { setStatus("Username taken! Choose another."); return; }
+
+                await userRef.set({
+                    password: password,
+                    level: 1,
+                    coins: "500",
+                    inventory: { freeze: 2, shield: 1 },
+                    savedRooms: engine.rooms,
+                    lastVisitedRoom: 0,
+                    lastWheelSpinTimestamp: 0,
+                    createdAt: new Date()
+                });
+
+                loginSuccess(username, 1, "500", { freeze: 2, shield: 1 }, engine.rooms, 0, 0);
+            } catch (error) {
+                console.error(error);
+                setStatus("Error: " + (error.message || "Database permission denied"));
+            }
+        }
+
+        async function handleLogin() {
+            if (!db) { setStatus("Database not initialized!"); return; }
+
+            const username = document.getElementById('auth-username').value.trim().toLowerCase();
+            const password = document.getElementById('auth-password').value.trim();
+
+            if (!username || !password) { setStatus("Enter username & password!"); return; }
+
+            setStatus("Checking details...", false);
+
+            try {
+                const userRef = db.collection('players').doc(username);
+                const doc = await userRef.get();
+
+                if (!doc.exists) { setStatus("Account not found! Sign up."); return; }
+
+                const userData = doc.data();
+                if (userData.password !== password) { setStatus("Incorrect password!"); return; }
+
+                const savedInventory = userData.inventory || { freeze: 2, shield: 1 };
+                const savedRoomsData = userData.savedRooms || engine.rooms;
+                const lastRoomData = userData.lastVisitedRoom || 0;
+                const lastWheelStamp = userData.lastWheelSpinTimestamp || 0;
+
+                loginSuccess(username, userData.level || 1, (userData.coins || 500).toString(), savedInventory, savedRoomsData, lastRoomData, lastWheelStamp);
+            } catch (error) {
+                console.error(error);
+                setStatus("Error: " + (error.message || "Connection failed"));
+            }
+        }
+
+        function loginSuccess(username, level, coins, inventory, savedRooms, lastVisitedRoom, lastWheelStamp) {
+            currentUser = username;
+            engine.level = level;
+            engine.coins = coins.toString();
+            engine.inventory = inventory || { freeze: 2, shield: 1 };
+            engine.lastWheelSpinTimestamp = lastWheelStamp || 0;
+            
+            if(savedRooms && savedRooms.length > 0) {
+                engine.rooms = savedRooms;
+            }
+            engine.lastVisitedRoomIndex = lastVisitedRoom || 0;
+
+            const overlay = document.getElementById('auth-overlay');
+            if (overlay) overlay.style.display = 'none';
+
+            loadGameData();
+            checkWheelTimerStatus();
+        }
+
+        /* --- FIREBASE DATA SYNC --- */
+        async function saveGameData(currentLevel, currentCoins) {
+            if (!currentUser || !db) return;
+            try {
+                await db.collection('players').doc(currentUser).update({
+                    level: currentLevel,
+                    coins: currentCoins.toString(),
+                    inventory: engine.inventory,
+                    savedRooms: engine.rooms,
+                    lastVisitedRoom: engine.lastVisitedRoomIndex,
+                    lastWheelSpinTimestamp: engine.lastWheelSpinTimestamp
+                });
+                console.log("Synced to Firebase!");
+            } catch (error) {
+                console.error("Save Error:", error);
+            }
+        }
+
+        function loadGameData() {
+            document.getElementById('display-user').innerText = currentUser;
+            updateDisplay();
+            processRoomGenerationPipeline();
+        }
+
+        /* --- 24-HOUR REAL TIME WHEEL LOCK ENGINE --- */
+        function checkWheelTimerStatus() {
+            const now = Date.now();
+            const cooldown = 24 * 60 * 60 * 1000; // 24 Hours in ms
+            const timePassed = now - engine.lastWheelSpinTimestamp;
+
+            const banner = document.getElementById('spin-status-banner');
+            const btn = document.getElementById('wheel-spin-trigger');
+
+            if (timePassed < cooldown) {
+                const remaining = cooldown - timePassed;
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+
+                if(banner) {
+                    banner.innerText = `⏳ Wheel Cooldown Active! Next spin in: ${hours}h ${mins}m ${secs}s`;
+                    banner.style.cssText = "background:rgba(255,51,68,0.1); color:var(--ea-red); font-weight:bold;";
+                }
+                if(btn) btn.style.opacity = "0.5";
+                return false;
+            } else {
+                if(banner) {
+                    banner.innerText = "🟢 Spin Ready! Real Rewards Unlocked!";
+                    banner.style.cssText = "background:rgba(0,255,135,0.1); color:var(--success-green); font-weight:bold;";
+                }
+                if(btn) btn.style.opacity = "1";
+                return true;
+            }
+        }
+        setInterval(checkWheelTimerStatus, 1000);
+
+        /* --- ACADEMY SETUP PROFILE SELECTOR --- */
+        function assignActiveDifficulty(classTitle, timerLimit) {
+            engine.selectedClassTitle = classTitle;
+            engine.maxClockSetting = timerLimit;
+            
+            document.querySelectorAll('.class-select-card').forEach(el => el.classList.remove('selected-node'));
+            
+            const mapping = {
+                'Class 5': 'node-class5', 'Class 6': 'node-class6',
+                'Class 7': 'node-class7', 'Class 8': 'node-class8',
+                'Class 9': 'node-class9', 'Class 10': 'node-class10',
+                'Class 11': 'node-class11', 'Class 12': 'node-class12'
+            };
+            if(mapping[classTitle]) document.getElementById(mapping[classTitle]).classList.add('selected-node');
+        }
+
+        function triggerEngineInitialization() {
+            tryLockOrientation();
+            engine.isMobileHardware = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            
+            const featureSubText = document.getElementById('ui-hardware-feature-sub');
+            if(engine.isMobileHardware) {
+                featureSubText.innerText = `Mobile Landscape Mode Buffer Enabled | Buffer +4s`;
+                featureSubText.style.color = 'var(--primary-neon)';
+                engine.maxClockSetting += 4; 
+                document.querySelectorAll('.ans-btn').forEach(b => b.style.padding = '14px 10px'); 
+            } else {
+                featureSubText.innerText = `Desktop Layout Active | Keyboard Hotkeys 1-4`;
+                featureSubText.style.color = 'var(--success-green)';
+                
+                window.addEventListener('keydown', (e) => {
+                    const matchKeys = ['1', '2', '3', '4'];
+                    if (matchKeys.includes(e.key) && !engine.isGamePaused) {
+                        const targetBtns = document.querySelectorAll('#matrix-input-deck .ans-btn');
+                        const targetIndex = parseInt(e.key) - 1;
+                        if(targetBtns[targetIndex] && targetBtns[targetIndex].style.opacity !== "0.2") {
+                            processSelection(targetBtns[targetIndex]);
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('ui-current-class-header').innerText = `${engine.selectedClassTitle} Engine Core`;
+            document.getElementById('class-selection-hub-screen').style.display = "none";
+            document.getElementById('main-game-matrix-workspace').style.display = "block";
+            
+            initiateNewPuzzle();
+            updateDisplay();
+        }
+
+        /* --- CODE REDEEM VAULT SYSTEM --- */
+        function redeemSecretCode() {
+            let inputField = document.getElementById('vault-code-input');
+            let msgField = document.getElementById('vault-message');
+            let enteredCode = inputField.value.trim().toUpperCase();
+
+            if (VAULT_CODES.hasOwnProperty(enteredCode)) {
+                if (claimedCodes[enteredCode]) {
+                    msgField.innerText = "❌ Code Asset Already Injected!"; msgField.style.color = "var(--ea-red)";
+                } else {
+                    addCoins(VAULT_CODES[enteredCode]);
+                    claimedCodes[enteredCode] = true;
+                    msgField.innerText = `🎉 +${BigInt(VAULT_CODES[enteredCode]).toLocaleString()} Coins Loaded Successfully!`; msgField.style.color = "var(--success-green)";
+                    deployFX(); updateDisplay(); inputField.value = "";
+                    saveGameData(engine.level, engine.coins);
+                }
+            } else {
+                msgField.innerText = "❌ Code Signature Invalid/Broken!"; msgField.style.color = "var(--ea-red)";
+            }
+        }
+
+        /* --- SHOP REPOSITORIES --- */
+        function buildSixtyPackShopDeck() {
+            const container = document.getElementById('dynamic-60-pack-shop');
+            container.innerHTML = "";
+            for(let i = 1; i <= 60; i++) {
+                let coinYield = (i * 65).toString();
+                let costINR = (i === 1) ? 1.0 : (i === 2) ? 2.3 : (1.5 * i + 1.2).toFixed(1);
+                let row = document.createElement('div');
+                row.className = "shop-item-row";
+                row.innerHTML = `
+                    <span>📦 Pack Matrix #${i} (+${coinYield})</span>
+                    <button class="small-buy-btn pack-buy-btn" onclick="triggerMockPayment('${coinYield}', ${costINR})">₹${costINR}</button>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        let paymentTimeoutTracker = null;
+        function triggerMockPayment(coinsToGive, costINR) {
+            const modal = document.getElementById('bank-gateway-node');
+            const title = document.getElementById('gateway-pack-title');
+            modal.style.display = "flex";
+            title.innerText = `Authorizing Secure API Route for ₹${costINR}...`;
+            
+            paymentTimeoutTracker = setTimeout(() => {
+                addCoins(coinsToGive);
+                modal.style.display = "none";
+                deployFX(); updateDisplay();
+                saveGameData(engine.level, engine.coins);
+                alert(`💳 Ledger Sync Clear! +${coinsToGive} Coins loaded safely into memory!`);
+            }, 1500);
+        }
+        function cancelMockPayment() { clearTimeout(paymentTimeoutTracker); document.getElementById('bank-gateway-node').style.display = "none"; }
+
+        /* --- SYSTEM PAUSE SYSTEMS --- */
+        function pauseGameAndRemoveQuestion() {
+            if (engine.isGamePaused) return;
+            clearInterval(engine.clockTicker);
+            engine.isGamePaused = true;
+
+            document.getElementById('puzzle-question').innerHTML = `<span style="color: var(--ea-red); font-size: 1.4rem; letter-spacing: 1px;">⏸️ SYSTEM HOLD: OPEN FOR UPDATION</span>`;
+            document.getElementById('matrix-input-deck').style.setProperty('display', 'none', 'important');
+            document.getElementById('memory-board-node').style.setProperty('display', 'none', 'important');
+            document.getElementById('power-row-node').style.setProperty('display', 'none', 'important');
+            document.getElementById('mode-selector-grid-node').style.cssText = "pointer-events: none; opacity: 0.3;";
+
+            document.getElementById('btn-pause-node').style.display = "none";
+            document.getElementById('btn-resume-node').style.display = "block";
+        }
+
+        function resumeGameAndLoadQuestion() {
+            if (!engine.isGamePaused) return;
+            engine.isGamePaused = false;
+
+            document.getElementById('matrix-input-deck').style.setProperty('display', 'grid', 'important');
+            document.getElementById('power-row-node').style.setProperty('display', 'flex', 'important');
+            document.getElementById('mode-selector-grid-node').style.cssText = "pointer-events: auto; opacity: 1;";
+
+            document.getElementById('btn-pause-node').style.display = "block";
+            document.getElementById('btn-resume-node').style.display = "none";
+
+            initiateNewPuzzle();
+        }
+
+        /* --- SPARKS FX LOOP SYSTEM --- */
+        const canvas = document.getElementById('fx-canvas'); const ctx = canvas.getContext('2d'); let sparkles = [];
+        function resizeFXCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeFXCanvas); resizeFXCanvas();
+        class Spark {
+            constructor(x,y) { this.x=x; this.y=y; this.size=Math.random()*4+5; this.vx=Math.random()*6-3; this.vy=Math.random()*-6-2; this.alpha=1; }
+            tick() { this.x+=this.vx; this.y+=this.vy; this.vy+=0.15; this.alpha-=0.03; }
+            draw() { ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle="#00f2fe"; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+        }
+        function deployFX() { for(let i=0; i<15; i++) sparkles.push(new Spark(window.innerWidth/2, window.innerHeight/3)); }
+        function fxLoop() { ctx.clearRect(0,0,canvas.width,canvas.height); sparkles=sparkles.filter(s=>s.alpha>0); sparkles.forEach(s=>{s.tick(); s.draw();}); requestAnimationFrame(fxLoop); }
+        requestAnimationFrame(fxLoop);
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.viewport').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active'); if(event && event.currentTarget) event.currentTarget.classList.add('active');
+            if(tabId === 'rewards-tab') drawVisualWheel(0);
+        }
+
+        /* --- GAME PLAY LOOPS --- */
+        function changeGameMode(mode) {
+            if(engine.isGamePaused) return;
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+            engine.currentMode = mode; initiateNewPuzzle();
+        }
+
+        function initiateNewPuzzle() {
+            if (engine.isGamePaused) return;
+            clearInterval(engine.clockTicker);
+            document.getElementById('ui-feedback').innerText = "";
+            document.getElementById('ui-question-tracker').innerText = `Question ${engine.questionsSolvedInCurrentLevel + 1} of ${engine.requiredQuestionsPerLevel}`;
+
+            let qArea = document.getElementById('puzzle-question');
+            let mBoard = document.getElementById('memory-board-node');
+            let iDeck = document.getElementById('matrix-input-deck');
+            let pRow = document.getElementById('power-row-node');
+            let tWrap = document.getElementById('main-timer-wrapper');
+
+            mBoard.style.display = "none"; iDeck.style.setProperty('display', 'grid', 'important'); pRow.style.setProperty('display', 'flex', 'important'); tWrap.style.display = "block"; qArea.style.display = "block";
+
+            let classScales = {
+                'Class 5': 15, 'Class 6': 20, 'Class 7': 25, 'Class 8': 35,
+                'Class 9': 50, 'Class 10': 70, 'Class 11': 95, 'Class 12': 130
+            };
+            let curriculumScale = classScales[engine.selectedClassTitle] || 25;
+
+            if (engine.currentMode === 'math') {
+                engine.clock = engine.maxClockSetting; document.getElementById('ui-timer').style.width = "100%";
+                
+                let baseScalingFactor = Math.floor(engine.level / 5) * 4;
+                let n1 = Math.floor(Math.random() * (curriculumScale + baseScalingFactor)) + 10;
+                let n2 = Math.floor(Math.random() * (15 + baseScalingFactor)) + 5;
+                
+                engine.targetAnswer = (n1 + n2).toString();
+                qArea.innerText = `Academy Equation: Compute [ ${n1} + ${n2} ]`;
+                
+                let choices = [engine.targetAnswer];
+                while(choices.length < 4) {
+                    let d = (parseInt(engine.targetAnswer) + (Math.floor(Math.random() * 16) - 8)).toString();
+                    if(!choices.includes(d)) choices.push(d);
+                }
+                choices.sort(() => Math.random() - 0.5);
+                document.querySelectorAll('#matrix-input-deck .ans-btn').forEach((b,i) => { b.innerText = choices[i]; b.style.opacity="1"; });
+                startClockEngine();
+            } 
+            else if (engine.currentMode === 'memory') {
+                iDeck.style.setProperty('display', 'none', 'important'); pRow.style.setProperty('display', 'none', 'important'); tWrap.style.display = "none"; qArea.style.display = "none";
+                mBoard.style.display = "grid"; mBoard.innerHTML = "";
+                engine.flippedCardsIndices = []; engine.matchedCardsCount = 0; engine.isLockingBoardAction = false;
+                
+                let shuffledMaster = [...engine.masterEmojiPool].sort(() => Math.random() - 0.5);
+                let selectedEmojis = shuffledMaster.slice(0, 4);
+                engine.memoryIconsPool = [...selectedEmojis, ...selectedEmojis];
+                engine.memoryIconsPool.sort(() => Math.random() - 0.5);
+
+                for(let i=0; i<8; i++) {
+                    let card = document.createElement('div'); card.className = "mem-card"; card.innerText = "❓";
+                    card.onclick = () => processCardFlipInteraction(card, i); mBoard.appendChild(card);
+                }
+            } 
+            else if (engine.currentMode === 'word') {
+                engine.clock = engine.maxClockSetting; document.getElementById('ui-timer').style.width = "100%";
+                
+                let uniquePool = [...engine.masterWordBank].sort(() => Math.random() - 0.5);
+                let chosen = uniquePool[0]; engine.targetAnswer = chosen;
+                
+                let scr = chosen.split('').sort(()=>Math.random()-0.5).join('');
+                qArea.innerText = `Decrypt Word Vector: "${scr}"`;
+                
+                let op = [chosen];
+                let fillerIndex = 1;
+                while(op.length < 4) { 
+                    let f = uniquePool[fillerIndex++]; 
+                    if(!op.includes(f)) op.push(f); 
+                }
+                op.sort(() => Math.random() - 0.5);
+                document.querySelectorAll('#matrix-input-deck .ans-btn').forEach((b,i) => { b.innerText = op[i]; b.style.opacity="1"; });
+                startClockEngine();
+            }
+        }
+
+        function processCardFlipInteraction(cardElement, idx) {
+            if (engine.isGamePaused || engine.isLockingBoardAction || cardElement.classList.contains('flipped')) return;
+            cardElement.classList.add('flipped'); cardElement.innerText = engine.memoryIconsPool[idx];
+            engine.flippedCardsIndices.push({ element: cardElement, index: idx });
+
+            if (engine.flippedCardsIndices.length === 2) {
+                engine.isLockingBoardAction = true;
+                let c1 = engine.flippedCardsIndices[0]; let c2 = engine.flippedCardsIndices[1];
+                if (engine.memoryIconsPool[c1.index] === engine.memoryIconsPool[c2.index]) {
+                    engine.matchedCardsCount += 2; engine.flippedCardsIndices = []; engine.isLockingBoardAction = false;
+                    if(engine.matchedCardsCount === 8) setTimeout(handleSuccessPayload, 500);
+                } else {
+                    setTimeout(() => {
+                        c1.element.classList.remove('flipped'); c1.element.innerText = "❓";
+                        c2.element.classList.remove('flipped'); c2.element.innerText = "❓";
+                        engine.flippedCardsIndices = []; engine.isLockingBoardAction = false;
+                    }, 800);
+                }
+            }
+        }
+
+        function startClockEngine() { 
+            engine.clockTicker = setInterval(() => { 
+                engine.clock -= 0.1; 
+                document.getElementById('ui-timer').style.width = `${(engine.clock/engine.maxClockSetting)*100}%`; 
+                if(engine.clock <= 0) { clearInterval(engine.clockTicker); triggerFailure(); } 
+            }, 100); 
+        }
+        
+        /* --- POWERUP USAGE --- */
+        function usePowerup(type) { 
+            if(engine.isGamePaused) return; 
+            if(engine.inventory[type] > 0) { 
+                engine.inventory[type]--; 
+                if(type === 'freeze') { 
+                    clearInterval(engine.clockTicker); 
+                } else { 
+                    let btns = document.querySelectorAll('#matrix-input-deck .ans-btn'); 
+                    let e = 0; 
+                    btns.forEach(b => { 
+                        if(b.innerText !== engine.targetAnswer && e < 2){ 
+                            b.style.opacity = "0.2"; 
+                            e++; 
+                        } 
+                    }); 
+                } 
+                updateDisplay(); 
+                saveGameData(engine.level, engine.coins);
+            } else {
+                alert(`⚠️ You don't have any ${type} powerups left! Buy more in the sidebar.`);
+            }
+        }
+        
+        /* --- BUYING POWERUPS --- */
+        function buyInventoryItem(type, cost) { 
+            if (deductCoins(cost)) {
+                engine.inventory[type]++; 
+                updateDisplay(); 
+                deployFX(); 
+                saveGameData(engine.level, engine.coins); 
+            } else {
+                alert("❌ Not enough coins to purchase item!");
+            }
+        }
+
+        function processSelection(element) { if(engine.isGamePaused) return; clearInterval(engine.clockTicker); if(element.innerText === engine.targetAnswer) { handleSuccessPayload(); } else { triggerFailure(); } }
+
+        function handleSuccessPayload() {
+            deployFX();
+            let payout = (15 + Math.floor(engine.level / 2)).toString();
+            addCoins(payout);
+            engine.questionsSolvedInCurrentLevel++;
+
+            if (engine.questionsSolvedInCurrentLevel >= engine.requiredQuestionsPerLevel) {
+                engine.questionsSolvedInCurrentLevel = 0;
+                if(engine.level < engine.maxLevels) engine.level++;
+                alert(`🌟 LEVEL UP! Welcome to Level ${engine.level}. Difficulty increased!`);
+            }
+
+            if (!engine.canUserSpinWheel) {
+                engine.canUserSpinWheel = true;
+                const b = document.getElementById('spin-status-banner');
+                if(b) {
+                    b.innerText = "🟢 Spin Restored! Spin Available!"; b.style.cssText = "background:rgba(0,255,135,0.1); color:var(--success-green); font-weight:bold;";
+                }
+            }
+
+            updateDisplay(); 
+            saveGameData(engine.level, engine.coins);
+            setTimeout(initiateNewPuzzle, 600);
+        }
+        function triggerFailure() { alert("❌ Calculation Frame Dropped! Resetting current query..."); initiateNewPuzzle(); }
+
+        /* --- 🏰 INFINITE ROOMS & SAVED PROGRESS TREEHOUSE ENGINE --- */
+        function processRoomGenerationPipeline() {
+            const container = document.getElementById('dynamic-rooms-canvas'); container.innerHTML = "";
+            engine.rooms.forEach((room, idx) => {
+                let div = document.createElement('div'); div.className = `room-box ${room.unlocked ? 'unlocked-room' : ''}`;
+                div.onclick = () => handleRoomInteractions(idx);
+                if (room.unlocked) {
+                    div.innerHTML = `🌟 <strong>${room.title}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">Room Lvl: ${room.roomLevel} | Multiplier: x${room.upgradeLevel}</span><br><span style="color:var(--primary-neon); font-size:0.75rem; margin-top:8px; font-weight:bold;">👉 ENTER INFINITE ROOM</span>`;
+                } else {
+                    div.innerHTML = `🔒 Unlock Infinite Room #${idx + 1}<br><span style="font-weight:bold; color:var(--gold); font-size:0.8rem;">Cost: ${BigInt(room.cost).toLocaleString()} 🪙</span>`;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function handleRoomInteractions(idx) {
+            let room = engine.rooms[idx];
+            if (room.unlocked) { 
+                launchActiveImmersionRoom(idx); 
+            } else {
+                if (deductCoins(room.cost)) {
+                    room.unlocked = true;
+
+                    // Automatically spawn next room infinitely
+                    if (idx === engine.rooms.length - 1) {
+                        let nextID = engine.rooms.length;
+                        let nextCost = (BigInt(room.cost) + BigInt(500)).toString();
+                        engine.rooms.push({ id: nextID, title: `Cyber Vault Node #${nextID + 1}`, cost: nextCost, unlocked: false, upgradeLevel: 1, roomLevel: 1 });
+                    }
+
+                    deployFX(); 
+                    updateDisplay(); 
+                    processRoomGenerationPipeline(); 
+                    saveGameData(engine.level, engine.coins);
+                } else { 
+                    alert("Operational coin limits low!"); 
+                }
+            }
+        }
+
+        function launchActiveImmersionRoom(idx) {
+            clearInterval(engine.clockTicker); 
+            engine.currentRoomIndex = idx;
+            engine.lastVisitedRoomIndex = idx;
+            
+            document.getElementById('treehouse-main-view').style.display = "none";
+            document.getElementById('main-nav-bar').style.cssText = "pointer-events: none; opacity: 0.1;";
+            document.getElementById('room-immersion-view').style.display = "block";
+            
+            syncRoomVisualNodeHUD(); 
+            generateRoomPuzzleMatrix();
+            saveGameData(engine.level, engine.coins);
+        }
+
+        function syncRoomVisualNodeHUD() {
+            let room = engine.rooms[engine.currentRoomIndex];
+            document.getElementById('active-room-title').innerText = `🧬 ${room.title} (Level ${room.roomLevel})`;
+            document.getElementById('ui-room-item-title').innerText = `🔺 Multiplier Asset Lvl: ${room.upgradeLevel}`;
+            document.getElementById('ui-room-upgrade-btn').innerText = `Upgrade: ${(room.upgradeLevel * 100).toLocaleString()} 🪙`;
+        }
+
+        function upgradeCurrentRoomItem() {
+            let room = engine.rooms[engine.currentRoomIndex]; 
+            let cost = (room.upgradeLevel * 100).toString();
+            if (deductCoins(cost)) { 
+                room.upgradeLevel++; 
+                deployFX(); 
+                updateDisplay(); 
+                syncRoomVisualNodeHUD(); 
+                generateRoomPuzzleMatrix(); 
+                saveGameData(engine.level, engine.coins); 
+            } else {
+                alert("Not enough coins to upgrade room multiplier!");
+            }
+        }
+
+        function generateRoomPuzzleMatrix() {
+            let room = engine.rooms[engine.currentRoomIndex];
+            let roomScale = (room.roomLevel * 20) + (room.upgradeLevel * 10);
+            let n1 = Math.floor(Math.random() * roomScale) + 10; 
+            let n2 = Math.floor(Math.random() * (roomScale / 2)) + 10; 
+            
+            engine.roomTargetAnswer = n1 + n2;
+            document.getElementById('room-puzzle-question').innerText = `[Room Lvl ${room.roomLevel}] Compute: ${n1} + ${n2}`;
+            
+            let choices = [engine.roomTargetAnswer];
+            while(choices.length < 4) { 
+                let d = engine.roomTargetAnswer + (Math.floor(Math.random() * 20) - 10); 
+                if(!choices.includes(d)) choices.push(d); 
+            }
+            choices.sort(() => Math.random() - 0.5); 
+            document.querySelectorAll('#room-input-deck .ans-btn').forEach((b, i) => { b.innerText = choices[i]; });
+        }
+
+        function processRoomSelection(element) {
+            let feedback = document.getElementById('room-ui-feedback');
+            let room = engine.rooms[engine.currentRoomIndex];
+
+            if (parseInt(element.innerText) === engine.roomTargetAnswer) {
+                deployFX(); 
+                let payout = (50 * room.upgradeLevel * room.roomLevel).toString(); 
+                addCoins(payout);
+                
+                room.roomLevel++;
+                
+                feedback.innerText = `🎯 Level Up! Room Lvl ${room.roomLevel}! +${BigInt(payout).toLocaleString()} Coins!`; 
+                feedback.style.color = "var(--success-green)";
+                
+                updateDisplay(); 
+                syncRoomVisualNodeHUD();
+                saveGameData(engine.level, engine.coins); 
+                setTimeout(() => { feedback.innerText = ""; generateRoomPuzzleMatrix(); }, 700);
+            } else { 
+                feedback.innerText = "❌ Computational Error!"; 
+                feedback.style.color = "var(--ea-red)"; 
+            }
+        }
+
+        function exitActiveRoom() {
+            engine.currentRoomIndex = -1; document.getElementById('room-immersion-view').style.display = "none";
+            document.getElementById('treehouse-main-view').style.display = "block"; document.getElementById('main-nav-bar').style.cssText = "pointer-events: auto; opacity: 1;";
+            initiateNewPuzzle();
+        }
+
+        /* --- ROTATIONAL FORTUNE WHEEL --- */
+        function drawVisualWheel(currentRadAngle) {
+            const wCanvas = document.getElementById('wheel-canvas'); if(!wCanvas) return;
+            const wCtx = wCanvas.getContext('2d'); const numSlices = engine.wheelRewards.length;
+            const sliceAngle = (2 * Math.PI) / numSlices; const radius = wCanvas.width / 2;
+
+            wCtx.clearRect(0, 0, wCanvas.width, wCanvas.height); wCtx.save(); wCtx.translate(radius, radius); wCtx.rotate(currentRadAngle);
+            for (let i = 0; i < numSlices; i++) {
+                wCtx.fillStyle = engine.wheelColors[i]; wCtx.beginPath(); wCtx.moveTo(0, 0); wCtx.arc(0, 0, radius, i * sliceAngle, (i + 1) * sliceAngle); wCtx.closePath(); wCtx.fill();
+                wCtx.save(); wCtx.rotate(i * sliceAngle + sliceAngle / 2); wCtx.fillStyle = "#000000"; wCtx.font = "bold 11px sans-serif"; wCtx.textAlign = "right";
+                wCtx.fillText(BigInt(engine.wheelRewards[i]).toLocaleString() + "🪙", radius - 10, 4); wCtx.restore();
+            }
+            wCtx.restore();
+            wCtx.fillStyle = "#ffffff"; wCtx.beginPath(); wCtx.arc(radius, radius, 22, 0, Math.PI*2); wCtx.fill();
+        }
+
+        function spinVisualFortuneWheel() {
+            if (engine.isWheelSpinning) return;
+            if(!checkWheelTimerStatus()) { alert("⚠️ Wheel Cooldown Active! Please wait 24 hours."); return; }
+            
+            engine.isWheelSpinning = true; let currentRotation = 0; let spinSpeed = 0.35 + Math.random() * 0.2; let deceleration = 0.0025;
+            function animationLoop() {
+                currentRotation += spinSpeed; spinSpeed -= deceleration; drawVisualWheel(currentRotation);
+                if (spinSpeed > 0.005) { requestAnimationFrame(animationLoop); } 
+                else {
+                    engine.isWheelSpinning = false;
+                    engine.lastWheelSpinTimestamp = Date.now(); // Stamp current timestamp
+                    
+                    const numSlices = engine.wheelRewards.length; const sliceAngle = (2 * Math.PI) / numSlices;
+                    let normalizeAngle = (2 * Math.PI) - (currentRotation % (2 * Math.PI)); normalizeAngle = (normalizeAngle - Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+                    let finalIndex = Math.floor(normalizeAngle / sliceAngle) % numSlices;
+                    
+                    let prize = engine.wheelRewards[finalIndex]; 
+                    addCoins(prize);
+                    
+                    deployFX(); 
+                    updateDisplay(); 
+                    saveGameData(engine.level, engine.coins);
+                    checkWheelTimerStatus();
+                    alert(`🎰 Wheel Stopped! You won +${BigInt(prize).toLocaleString()} Mega Coins! Wheel locked for 24 hours.`);
+                }
+            }
+            animationLoop();
+        }
+
+        function updateDisplay() { 
+            try {
+                document.getElementById('ui-coins').innerText = BigInt(engine.coins).toLocaleString(); 
+            } catch(e) {
+                document.getElementById('ui-coins').innerText = engine.coins; 
+            }
+            document.getElementById('ui-lvl').innerText = engine.level; 
+            document.getElementById('inv-freeze').innerText = engine.inventory.freeze; 
+            document.getElementById('inv-shield').innerText = engine.inventory.shield; 
+        }
+
+        // BIND EVENT LISTENERS ON PAGE LOAD
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginBtn = document.getElementById("login-btn");
+            const signupBtn = document.getElementById("signup-btn");
+
+            if (loginBtn) loginBtn.addEventListener("click", handleLogin);
+            if (signupBtn) signupBtn.addEventListener("click", handleSignup);
+
+            buildSixtyPackShopDeck(); 
+            updateDisplay(); 
+            processRoomGenerationPipeline();
+        });
+    </script>
+</body>
+</html>
